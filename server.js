@@ -49,7 +49,8 @@ app.use(express.json());
 const allowedOrigins = [
   'https://ce03510-wordpress-og5g7.tw1.ru',
   'http://127.0.0.1:5500',
-  'https://testserver-eight-olive.vercel.app'
+  'https://testserver-eight-olive.vercel.app',
+  'https://testserverrender.onrender.com'
 ];
 
 app.use(cors({
