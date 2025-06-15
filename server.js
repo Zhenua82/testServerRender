@@ -50,7 +50,7 @@ const allowedOrigins = [
   'https://ce03510-wordpress-og5g7.tw1.ru',
   'http://127.0.0.1:5500',
   'https://testserver-eight-olive.vercel.app',
-  'https://testserverrender.onrender.com'
+  // 'https://testserverrender.onrender.com'
 ];
 
 app.use(cors({
@@ -172,7 +172,11 @@ app.post('/bdPost', uploadFields, async (req, res) => {
     const portfolioString = uploadedPortfolioUrls.join(' ');
 
     const name = req.body.Name || 'Без имени';
-    const telephone = req.body.telephone || '';
+    // const telephone = req.body.telephone || '';
+    const telephoneRaw = req.body.telephone;
+    const telephone = telephoneRaw
+      ? `<a href="tel:${telephoneRaw}" style="color: blue;"><h5>${telephoneRaw}</h5></a>`
+      : '';
     const professionId = req.body.profession_id || 9;
     const speciality = req.body.speciality || '';
 
