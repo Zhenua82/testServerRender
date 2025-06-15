@@ -34,11 +34,13 @@
 
 const express = require('express');
 const mysql = require('mysql2');
+const mysqlPromis = require('mysql2/promise');
 const cors = require('cors');
 const multer = require('multer');
 const axios = require('axios');
 const FormData = require('form-data');
 require('dotenv').config();
+
 
 const app = express();
 app.use(express.json());
@@ -195,6 +197,72 @@ app.post('/bdPost', uploadFields, async (req, res) => {
   } catch (err) {
     console.error('Ошибка:', err);
     return res.status(500).json({ error: 'Ошибка при загрузке изображений или записи в БД' });
+  }
+});
+// ==============================
+// 📌 POST /deletePerson — удаление человека и изображений
+// ==============================
+app.post('/deletePerson', async (req, res) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  const { photo, portfolio } = req.body;
+
+  if (!photo) {
+    return res.status(400).json({ error: 'Не указано обязательное поле photo' });
+  }
+
+  try {
+    // ✅ Подключение к базе через mysql2/promise
+    const connection = await mysqlPromis.createConnection(DATA);
+
+    const deleteQuery = 'DELETE FROM homework_human WHERE photo = ?';
+    const [result] = await connection.execute(deleteQuery, [photo]);
+
+    await connection.end();
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Запись с таким photo не найдена' });
+    }
+
+    try {
+      // Удаление визитки
+      await axios.post('https://ce03510-wordpress-og5g7.tw1.ru/api/delete.php', {
+        file: `media/${photo}`
+      });
+
+      // Удаление изображений портфолио
+      if (portfolio) {
+        const imgUrls = [...portfolio.matchAll(/src="([^"]+)"/g)].map(match => match[1]);
+
+        for (const fullUrl of imgUrls) {
+          const relPath = fullUrl.split('/api/')[1]; // 'media/файл'
+          if (relPath) {
+            await axios.post('https://ce03510-wordpress-og5g7.tw1.ru/api/delete.php', {
+              file: relPath
+            });
+          }
+        }
+      }
+
+      res.status(200).json({ success: true, message: 'Удалено успешно' });
+
+    } catch (deleteError) {
+      console.error('Ошибка удаления файлов:', deleteError.message);
+      res.status(500).json({ error: 'Удаление из БД прошло, но ошибка при удалении файлов' });
+    }
+  } catch (error) {
+    console.error('Ошибка удаления:', error);
+    res.status(500).json({ error: 'Ошибка при удалении' });
   }
 });
 
