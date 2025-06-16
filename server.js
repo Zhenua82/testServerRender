@@ -71,7 +71,6 @@ const DATA = {
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE
 };
-
 // ==============================
 // 📌 POST /bd — получить список
 // ==============================
