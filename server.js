@@ -270,6 +270,13 @@ app.post('/deletePerson', async (req, res) => {
   }
 });
 
+// Пинг-понг для Timeweb
+app.get('/api/ping', (req, res) => {
+  console.log('Пинг от Timeweb: ' + new Date().toISOString());
+  res.send('pong');
+});
+
+
 // ==============================
 // 📌 Заглушка корневой страницы
 // ==============================
