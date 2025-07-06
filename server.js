@@ -152,6 +152,9 @@ const uploadFields = upload.fields([
 ]);
 
 app.post('/bdPost', uploadFields, async (req, res) => {
+  console.log('req.files:', req.files);
+  console.log('req.body:', req.body);
+
   const photoFile = req.files['photo']?.[0];       // Визитка
   const portfolioFiles = req.files['portfolio'] || []; // Портфолио
 
