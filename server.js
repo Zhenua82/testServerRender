@@ -201,39 +201,67 @@ app.post('/bdPost', uploadFields, async (req, res) => {
       }
     }
 
-    // 🔻 Сохраняем в базу данных
-    const connection = mysql.createConnection(DATA);
-    connection.connect();
+    // // 🔻 Сохраняем в базу данных
+    // const connection = mysql.createConnection(DATA);
+    // connection.connect();
 
-    const portfolioString = uploadedPortfolioUrls.join(' ');
+    // const portfolioString = uploadedPortfolioUrls.join(' ');
 
+    // const name = req.body.Name || 'Без имени';
+    // // const telephone = req.body.telephone || '';
+    // const telephoneRaw = req.body.telephone;
+    // const telephone = telephoneRaw
+    //   ? `<a href="tel:${telephoneRaw}" style="color: blue;"><h5>${telephoneRaw}</h5></a>`
+    //   : '';
+    // const professionId = req.body.profession_id || 9;
+    // const speciality = req.body.speciality || '';
+
+    // const insertQuery = `
+    //   INSERT INTO homework_human (Name, photo, telephone, profession_id, speciality, portfolio, is_published)
+    //   VALUES (?, ?, ?, ?, ?, ?, true)
+    // `;
+
+    // connection.query(insertQuery, [name, photoUrl, telephone, professionId, speciality, portfolioString], (error, result) => {
+    //   connection.end();
+    //   if (error) {
+    //     return res.status(500).json({ error: error.message });
+    //   } else {
+    //     return res.json({
+    //       success: true,
+    //       insertedId: result.insertId,
+    //       photo: photoUrl,
+    //       portfolio: uploadedPortfolioUrls
+    //     });
+    //   }
+    // });
+
+    // 🔻 Сохранение в БД через ORM
     const name = req.body.Name || 'Без имени';
-    // const telephone = req.body.telephone || '';
     const telephoneRaw = req.body.telephone;
     const telephone = telephoneRaw
       ? `<a href="tel:${telephoneRaw}" style="color: blue;"><h5>${telephoneRaw}</h5></a>`
       : '';
     const professionId = req.body.profession_id || 9;
     const speciality = req.body.speciality || '';
+    const portfolioString = uploadedPortfolioUrls.join(' ');
 
-    const insertQuery = `
-      INSERT INTO homework_human (Name, photo, telephone, profession_id, speciality, portfolio, is_published)
-      VALUES (?, ?, ?, ?, ?, ?, true)
-    `;
-
-    connection.query(insertQuery, [name, photoUrl, telephone, professionId, speciality, portfolioString], (error, result) => {
-      connection.end();
-      if (error) {
-        return res.status(500).json({ error: error.message });
-      } else {
-        return res.json({
-          success: true,
-          insertedId: result.insertId,
-          photo: photoUrl,
-          portfolio: uploadedPortfolioUrls
-        });
-      }
+    const created = await HomeworkHuman.create({
+      Name: name,
+      photo: photoUrl,
+      telephone: telephone,
+      profession_id: professionId,
+      speciality: speciality,
+      portfolio: portfolioString,
+      is_published: true
     });
+
+    return res.json({
+      success: true,
+      insertedId: created.id,
+      photo: photoUrl,
+      portfolio: uploadedPortfolioUrls
+    });
+
 
   } catch (err) {
     console.error('Ошибка:', err);
@@ -262,18 +290,29 @@ app.post('/deletePerson', async (req, res) => {
     return res.status(400).json({ error: 'Не указано обязательное поле photo' });
   }
 
-  try {
-    // ✅ Подключение к базе через mysql2/promise
-    const connection = await mysqlPromis.createConnection(DATA);
+  // try {
+  //   // ✅ Подключение к базе через mysql2/promise
+  //   const connection = await mysqlPromis.createConnection(DATA);
 
-    const deleteQuery = 'DELETE FROM homework_human WHERE photo = ?';
-    const [result] = await connection.execute(deleteQuery, [photo]);
+  //   const deleteQuery = 'DELETE FROM homework_human WHERE photo = ?';
+  //   const [result] = await connection.execute(deleteQuery, [photo]);
 
-    await connection.end();
+  //   await connection.end();
 
-    if (result.affectedRows === 0) {
+  //   if (result.affectedRows === 0) {
+  //     return res.status(404).json({ error: 'Запись с таким photo не найдена' });
+  //   }
+
+  // Удаление записи из БД через ORM:
+    try {
+    // 🔍 Найдём запись по `photo`
+    const human = await HomeworkHuman.findOne({ where: { photo } });
+    if (!human) {
       return res.status(404).json({ error: 'Запись с таким photo не найдена' });
     }
+    // Удаляем запись из БД
+    await human.destroy();
+
 
     try {
       // Удаление визитки
