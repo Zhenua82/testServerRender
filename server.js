@@ -158,6 +158,9 @@ app.post('/bdPost', uploadFields, async (req, res) => {
   const photoFile = req.files['photo']?.[0];       // Визитка
   const portfolioFiles = req.files['portfolio'] || []; // Портфолио
 
+  console.log('📎 photoFile:', req.files['photo']?.[0]);
+
+
   if (!photoFile) {
     return res.status(400).json({ error: 'Поле photo обязательно' });
   }
@@ -200,6 +203,8 @@ app.post('/bdPost', uploadFields, async (req, res) => {
         const imgTag = `<img alt="" src="https://ce03510-wordpress-og5g7.tw1.ru/api/${relativeUrl}" style="height:380px; width:285px">`;
         uploadedPortfolioUrls.push(imgTag);
       } else {
+        console.log('Ошибка при создании записи в БД:', err.message);
+
         return res.status(500).json({ error: 'Ошибка загрузки файла портфолио' });
       }
     }
@@ -373,4 +378,19 @@ app.use((req, res) => {
 // ==============================
 // 📌 Запуск сервера
 // ==============================
-app.listen(5000, () => console.log('Server running on port 5000'));
+// app.listen(5000, () => console.log('Server running on port 5000'));
+
+// В самом низу server.js
+const { sequelize } = require('./bd');
+
+(async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('✅ Sequelize подключён');
+    await sequelize.sync(); // опционально
+    app.listen(5000, () => console.log('🚀 Сервер слушает порт 5000'));
+  } catch (err) {
+    console.error('❌ Ошибка при подключении к БД:', err);
+  }
+})();
+
