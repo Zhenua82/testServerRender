@@ -143,7 +143,15 @@ app.post('/bd', async (req, res) => {
 
 // Настройка multer для загрузки файлов
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+// const upload = multer({ storage: storage });
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+    fieldSize: 50 * 1024 * 1024
+  }
+});
+
 
 // Модифицируем существующий upload, чтобы обрабатывать и одиночное, и множественные файлы
 const uploadFields = upload.fields([
