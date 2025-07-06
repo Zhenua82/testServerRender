@@ -74,30 +74,67 @@ const DATA = {
 // ==============================
 // 📌 POST /bd — получить список
 // ==============================
-app.post('/bd', (req, res) => {
-  const connection = mysql.createConnection(DATA);
-  connection.connect();
+// app.post('/bd', (req, res) => {
+//   const connection = mysql.createConnection(DATA);
+//   connection.connect();
 
-  const query = `
-    SELECT 
-      hh.Name, 
-      hh.photo, 
-      hh.telephone, 
-      hp.title AS profession_title,
-      hh.portfolio
-    FROM homework_human AS hh
-    JOIN homework_profession AS hp ON hh.profession_id = hp.id
-    WHERE hh.is_published = true;
-  `;
+//   const query = `
+//     SELECT 
+//       hh.Name, 
+//       hh.photo, 
+//       hh.telephone, 
+//       hp.title AS profession_title,
+//       hh.portfolio
+//     FROM homework_human AS hh
+//     JOIN homework_profession AS hp ON hh.profession_id = hp.id
+//     WHERE hh.is_published = true;
+//   `;
 
-  connection.query(query, (error, result) => {
-    connection.end();
-    if (error) {
-      res.status(500).json({ error: error.message });
-    } else {
-      res.json({ message: 'Взаимодействие с бд состоялось', result });
-    }
-  });
+//   connection.query(query, (error, result) => {
+//     connection.end();
+//     if (error) {
+//       res.status(500).json({ error: error.message });
+//     } else {
+//       res.json({ message: 'Взаимодействие с бд состоялось', result });
+//     }
+//   });
+// });
+
+// Работа с ОРМ:
+const { HomeworkHuman, HomeworkProfession } = require('./bd');
+// задаем связь между таблицами:
+HomeworkHuman.belongsTo(HomeworkProfession, {
+  foreignKey: 'profession_id',
+  as: 'profession' // соответствует `as` в `include`
+});
+
+app.post('/bd', async (req, res) => {
+  try {
+    // Получаем записи, у которых is_published = true
+    const result = await HomeworkHuman.findAll({
+      where: { is_published: true },
+      attributes: ['Name', 'photo', 'telephone', 'portfolio'],
+      include: [{
+        model: HomeworkProfession,
+        as: 'profession', // или другое имя, если в связи в модели задано `as`
+        attributes: ['title']
+      }]
+    });
+
+    // Формируем результат с переименованием profession -> profession_title
+    const formatted = result.map(item => ({
+      Name: item.Name,
+      photo: item.photo,
+      telephone: item.telephone,
+      portfolio: item.portfolio,
+      profession_title: item.profession?.title || ''
+    }));
+
+    res.json({ message: 'Взаимодействие с БД через ORM состоялось', result: formatted });
+  } catch (error) {
+    console.error('Ошибка ORM:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // ==============================
