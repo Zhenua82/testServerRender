@@ -50,7 +50,9 @@ const allowedOrigins = [
   'https://ce03510-wordpress-og5g7.tw1.ru',
   'http://127.0.0.1:5500',
   'https://testserver-eight-olive.vercel.app',
-  'https://testserverrender.onrender.com'
+  'https://testserverrender.onrender.com',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173'
 ];
 
 app.use(cors({
