@@ -75,6 +75,40 @@ const DATA = {
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE
 };
+
+// ==============================
+// 📌 GET /bd/:id —  получать одного человека по id
+// ==============================
+app.get('/bd/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const person = await HomeworkHuman.findOne({
+      where: { id: id, is_published: true },
+      attributes: ['Name', 'photo', 'telephone', 'portfolio'],
+      include: [{
+        model: HomeworkProfession,
+        as: 'profession',
+        attributes: ['title']
+      }]
+    });
+    if (!person) {
+      return res.status(404).json({ message: 'Не найдено' });
+    }
+    const formatted = {
+      Name: person.Name,
+      photo: person.photo,
+      telephone: person.telephone,
+      portfolio: person.portfolio,
+      profession_title: person.profession?.title || ''
+    };
+    res.json({ result: formatted });
+  } catch (error) {
+    console.error('Ошибка ORM:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 // ==============================
 // 📌 POST /bd — получить список
 // ==============================
