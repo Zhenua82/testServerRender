@@ -95,6 +95,7 @@ app.get('/bd/:id', async (req, res) => {
       return res.status(404).json({ message: 'Не найдено' });
     }
     const formatted = {
+      id: person.id,
       Name: person.Name,
       photo: person.photo,
       telephone: person.telephone,
