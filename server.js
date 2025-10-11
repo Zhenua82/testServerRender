@@ -84,7 +84,7 @@ app.get('/bd/:id', async (req, res) => {
   try {
     const person = await HomeworkHuman.findOne({
       where: { id: id, is_published: true },
-      attributes: ['Name', 'photo', 'telephone', 'portfolio'],
+      attributes: ['id', 'Name', 'photo', 'telephone', 'portfolio'],
       include: [{
         model: HomeworkProfession,
         as: 'profession',
@@ -152,7 +152,7 @@ app.post('/bd', async (req, res) => {
     // Получаем записи, у которых is_published = true
     const result = await HomeworkHuman.findAll({
       where: { is_published: true },
-      attributes: ['Name', 'photo', 'telephone', 'portfolio'],
+      attributes: ['id', 'Name', 'photo', 'telephone', 'portfolio'],
       include: [{
         model: HomeworkProfession,
         as: 'profession', // или другое имя, если в связи в модели задано `as`
