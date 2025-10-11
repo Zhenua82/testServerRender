@@ -162,6 +162,7 @@ app.post('/bd', async (req, res) => {
 
     // Формируем результат с переименованием profession -> profession_title
     const formatted = result.map(item => ({
+      id: person.id,
       Name: item.Name,
       photo: item.photo,
       telephone: item.telephone,
