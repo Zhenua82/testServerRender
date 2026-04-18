@@ -152,6 +152,7 @@ app.post('/bd', async (req, res) => {
   try {
     // Получаем записи, у которых is_published = true
     const result = await HomeworkHuman.findAll({
+      // where: { is_published: true },
       where: { is_published: true },
       attributes: ['id', 'Name', 'photo', 'telephone', 'portfolio'],
       include: [{

@@ -23,8 +23,10 @@ module.exports = function(sequelize) {
     },
     is_published: {
       // type: DataTypes.TINYINT,
-      type: DataTypes.SMALLINT,
-      allowNull: true
+      // allowNull: true
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true
     },
     speciality: {
       type: DataTypes.STRING(27),
