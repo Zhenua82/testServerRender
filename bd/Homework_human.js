@@ -3,7 +3,8 @@ const { DataTypes } = require('sequelize');
 module.exports = function(sequelize) {
   return sequelize.define('Homework_human', {
     id: {
-      type: DataTypes.TINYINT,
+      // type: DataTypes.TINYINT,
+      type: DataTypes.SMALLINT,
       allowNull: false,
       autoIncrement: true,
       primaryKey: true
@@ -21,7 +22,8 @@ module.exports = function(sequelize) {
       allowNull: true
     },
     is_published: {
-      type: DataTypes.TINYINT,
+      // type: DataTypes.TINYINT,
+      type: DataTypes.SMALLINT,
       allowNull: true
     },
     speciality: {
@@ -29,7 +31,8 @@ module.exports = function(sequelize) {
       allowNull: true
     },
     profession_id: {
-      type: DataTypes.TINYINT,
+      // type: DataTypes.TINYINT,
+      type: DataTypes.SMALLINT,
       allowNull: true
     },
     telephone: {

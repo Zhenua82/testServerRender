@@ -3,7 +3,8 @@ const { DataTypes } = require('sequelize');
 module.exports = (sequelize) => {
   return sequelize.define('HomeworkProfession', {
     id: {
-      type: DataTypes.TINYINT,
+      // type: DataTypes.TINYINT,
+      type: DataTypes.SMALLINT,
       allowNull: true,
       primaryKey: true,
       autoIncrement: true,
