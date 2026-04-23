@@ -1,10 +1,11 @@
 // const express = require('express');
+// const mysql = require('mysql2');
+// const mysqlPromis = require('mysql2/promise');
 // const cors = require('cors');
 // const multer = require('multer');
 // const axios = require('axios');
 // const FormData = require('form-data');
 // require('dotenv').config();
-// const cloudinary = require('./cloudinary');
 
 
 // const app = express();
@@ -75,6 +76,36 @@
 //   }
 // });
 
+
+// // ==============================
+// // 📌 POST /bd — получить список
+// // ==============================
+// // app.post('/bd', (req, res) => {
+// //   const connection = mysql.createConnection(DATA);
+// //   connection.connect();
+
+// //   const query = `
+// //     SELECT 
+// //       hh.Name, 
+// //       hh.photo, 
+// //       hh.telephone, 
+// //       hp.title AS profession_title,
+// //       hh.portfolio
+// //     FROM homework_human AS hh
+// //     JOIN homework_profession AS hp ON hh.profession_id = hp.id
+// //     WHERE hh.is_published = true;
+// //   `;
+
+// //   connection.query(query, (error, result) => {
+// //     connection.end();
+// //     if (error) {
+// //       res.status(500).json({ error: error.message });
+// //     } else {
+// //       res.json({ message: 'Взаимодействие с бд состоялось', result });
+// //     }
+// //   });
+// // });
+
 // // Работа с ОРМ:
 // const { HomeworkHuman, HomeworkProfession } = require('./bd');
 // // задаем связь между таблицами:
@@ -87,6 +118,7 @@
 //   try {
 //     // Получаем записи, у которых is_published = true
 //     const result = await HomeworkHuman.findAll({
+//       // where: { is_published: true },
 //       where: { is_published: true },
 //       attributes: ['id', 'Name', 'photo', 'telephone', 'portfolio'],
 //       include: [{
@@ -151,72 +183,81 @@
 
 //   try {
 //     // 🔻 Загружаем визитку
-//     // const photoForm = new FormData();
-//     // photoForm.append('file', photoFile.buffer, photoFile.originalname);
+//     const photoForm = new FormData();
+//     photoForm.append('file', photoFile.buffer, photoFile.originalname);
 
-//     // const photoUploadResponse = await axios.post(
-//     //   'https://ce03510-wordpress-og5g7.tw1.ru/api/upload.php',
-//     //   photoForm,
-//     //   { headers: photoForm.getHeaders() }
-//     // );
+//     const photoUploadResponse = await axios.post(
+//       'https://ce03510-wordpress-og5g7.tw1.ru/api/upload.php',
+//       photoForm,
+//       { headers: photoForm.getHeaders() }
+//     );
 
-//     // const photoFullUrl = photoUploadResponse.data?.fileUrl;
-//     // const photoUrl = photoFullUrl?.split('/').slice(-1).join('/'); // '/файл'
-//     // if (!photoUrl) {
-//     //   return res.status(500).json({ error: 'Ошибка загрузки визитки (photo)' });
-//     // }
-
-//     // 🔻 загрузка визитки в Cloudinary
-//     const uploadFromBuffer = (buffer) => {
-//       return new Promise((resolve, reject) => {
-//         const stream = cloudinary.uploader.upload_stream(
-//           {
-//             folder: 'servExpress',
-//             resource_type: 'image'
-//           },
-//           (error, result) => {
-//             if (error) reject(error);
-//             else resolve(result);
-//           }
-//         );
-//         stream.end(buffer);
-//       });
-//     };
-//     const photoUploadResp = await uploadFromBuffer(photoFile.buffer);
-//     const photoPublicId = photoUploadResp.public_id;
-//     const photoUrl = photoUploadResp.secure_url;
+//     // const photoUrl = photoUploadResponse.data?.fileUrl;// дает полный URL
+//     const photoFullUrl = photoUploadResponse.data?.fileUrl;
+//     const photoUrl = photoFullUrl?.split('/').slice(-1).join('/'); // '/файл'
+//     if (!photoUrl) {
+//       return res.status(500).json({ error: 'Ошибка загрузки визитки (photo)' });
+//     }
 
 //     // 🔻 Загружаем все портфолио
-//     // const uploadedPortfolioUrls = [];
-
-//     // for (const file of portfolioFiles) {
-//     //   const form = new FormData();
-//     //   form.append('file', file.buffer, file.originalname);
-
-//     //   const response = await axios.post(
-//     //     'https://ce03510-wordpress-og5g7.tw1.ru/api/upload.php',
-//     //     form,
-//     //     { headers: form.getHeaders() }
-//     //   );
-
-//     //   if (response.data && response.data.fileUrl) {   
-//     //     const relativeUrl = response.data.fileUrl.split('/').slice(-2).join('/');// 'media/файл'
-//     //     const imgTag = `<img alt="" src="https://ce03510-wordpress-og5g7.tw1.ru/api/${relativeUrl}" style="height:380px; width:285px">`;
-//     //     uploadedPortfolioUrls.push(imgTag);
-//     //   } else {
-//     //     console.log('Ошибка при создании записи в БД:', err.message);
-
-//     //     return res.status(500).json({ error: 'Ошибка загрузки файла портфолио' });
-//     //   }
-//     // }
-
 //     const uploadedPortfolioUrls = [];
 
 //     for (const file of portfolioFiles) {
-//       const uploadResp = await uploadFromBuffer(file.buffer);
-//       const imgTag = `<img alt="" src="${uploadResp.secure_url}" style="height:380px; width:285px">`;
-//       uploadedPortfolioUrls.push(imgTag);
+//       const form = new FormData();
+//       form.append('file', file.buffer, file.originalname);
+
+//       const response = await axios.post(
+//         'https://ce03510-wordpress-og5g7.tw1.ru/api/upload.php',
+//         form,
+//         { headers: form.getHeaders() }
+//       );
+
+//       if (response.data && response.data.fileUrl) {
+//         // uploadedPortfolioUrls.push(response.data.fileUrl);// дает полный URL
+//         const relativeUrl = response.data.fileUrl.split('/').slice(-2).join('/');// 'media/файл'
+//         // uploadedPortfolioUrls.push(relativeUrl);
+//         const imgTag = `<img alt="" src="https://ce03510-wordpress-og5g7.tw1.ru/api/${relativeUrl}" style="height:380px; width:285px">`;
+//         uploadedPortfolioUrls.push(imgTag);
+//       } else {
+//         console.log('Ошибка при создании записи в БД:', err.message);
+
+//         return res.status(500).json({ error: 'Ошибка загрузки файла портфолио' });
+//       }
 //     }
+
+//     // // 🔻 Сохраняем в базу данных
+//     // const connection = mysql.createConnection(DATA);
+//     // connection.connect();
+
+//     // const portfolioString = uploadedPortfolioUrls.join(' ');
+
+//     // const name = req.body.Name || 'Без имени';
+//     // // const telephone = req.body.telephone || '';
+//     // const telephoneRaw = req.body.telephone;
+//     // const telephone = telephoneRaw
+//     //   ? `<a href="tel:${telephoneRaw}" style="color: blue;"><h5>${telephoneRaw}</h5></a>`
+//     //   : '';
+//     // const professionId = req.body.profession_id || 9;
+//     // const speciality = req.body.speciality || '';
+
+//     // const insertQuery = `
+//     //   INSERT INTO homework_human (Name, photo, telephone, profession_id, speciality, portfolio, is_published)
+//     //   VALUES (?, ?, ?, ?, ?, ?, true)
+//     // `;
+
+//     // connection.query(insertQuery, [name, photoUrl, telephone, professionId, speciality, portfolioString], (error, result) => {
+//     //   connection.end();
+//     //   if (error) {
+//     //     return res.status(500).json({ error: error.message });
+//     //   } else {
+//     //     return res.json({
+//     //       success: true,
+//     //       insertedId: result.insertId,
+//     //       photo: photoUrl,
+//     //       portfolio: uploadedPortfolioUrls
+//     //     });
+//     //   }
+//     // });
 
 //     // 🔻 Сохранение в БД через ORM
 //     const name = req.body.Name || 'Без имени';
@@ -228,19 +269,9 @@
 //     const speciality = req.body.speciality || '';
 //     const portfolioString = uploadedPortfolioUrls.join(' ');
 
-//     // const created = await HomeworkHuman.create({
-//     //   Name: name,
-//     //   photo: photoUrl,
-//     //   telephone: telephone,
-//     //   profession_id: professionId,
-//     //   speciality: speciality,
-//     //   portfolio: portfolioString,
-//     //   is_published: true
-//     // });
-
 //     const created = await HomeworkHuman.create({
 //       Name: name,
-//       photo: photoPublicId, // ⚠️ теперь public_id
+//       photo: photoUrl,
 //       telephone: telephone,
 //       profession_id: professionId,
 //       speciality: speciality,
@@ -254,6 +285,7 @@
 //       photo: photoUrl,
 //       portfolio: uploadedPortfolioUrls
 //     });
+
 
 //   } catch (err) {
 //     console.error('Ошибка:', err);
@@ -281,6 +313,19 @@
 //   if (!photo) {
 //     return res.status(400).json({ error: 'Не указано обязательное поле photo' });
 //   }
+
+//   // try {
+//   //   // ✅ Подключение к базе через mysql2/promise
+//   //   const connection = await mysqlPromis.createConnection(DATA);
+
+//   //   const deleteQuery = 'DELETE FROM homework_human WHERE photo = ?';
+//   //   const [result] = await connection.execute(deleteQuery, [photo]);
+
+//   //   await connection.end();
+
+//   //   if (result.affectedRows === 0) {
+//   //     return res.status(404).json({ error: 'Запись с таким photo не найдена' });
+//   //   }
 
 //   // Удаление записи из БД через ORM:
 //     try {
@@ -349,6 +394,9 @@
 // // ==============================
 // // 📌 Запуск сервера
 // // ==============================
+// // app.listen(5000, () => console.log('Server running on port 5000'));
+
+// // В самом низу server.js
 // const { sequelize } = require('./bd');
 
 // (async () => {
@@ -361,7 +409,6 @@
 //     console.error('❌ Ошибка при подключении к БД:', err);
 //   }
 // })();
-
 
 
 const express = require('express');
