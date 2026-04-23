@@ -412,6 +412,7 @@
 
 
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const multer = require('multer');
 require('dotenv').config();
@@ -421,6 +422,9 @@ const cloudinary = require('./cloudinary');
 
 const app = express();
 app.use(express.json());
+
+// Раздача статики из папки "front":
+app.use('/front', express.static(path.join(__dirname, 'front')));
 
 /* ==============================
    🔒 CORS
