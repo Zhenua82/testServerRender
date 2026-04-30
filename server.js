@@ -541,7 +541,7 @@ app.post('/bd', async (req, res) => {
       include: [{
         model: HomeworkProfession,
         as: 'profession',
-        attributes: ['title']
+        attributes: ['title', 'price']
       }]
     });
 
