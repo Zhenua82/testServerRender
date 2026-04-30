@@ -551,7 +551,8 @@ app.post('/bd', async (req, res) => {
       photo: item.photo,
       telephone: item.telephone,
       portfolio: item.portfolio,
-      profession_title: item.profession?.title || ''
+      profession_title: item.profession?.title || '',
+      profession_price: item.profession?.price || '',
     }));
 
     res.json({ result: formatted });
