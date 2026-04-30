@@ -1,100 +1,116 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Данные из БД</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Данные из базы</title>
+
+  <!-- Фавиконка: -->
+  <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+  <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96" />
+  <link rel="shortcut icon" href="favicon/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png" />
+  <link rel="manifest" href="favicon/site.webmanifest" />
+
   <link rel="stylesheet" href="css/personList.css" />
 </head>
+
 <body>
-   <header>
-      <a>admin </a>
-    </header>
 
-  <h1>Список мастеров:</h1>
-  <div id="result"></div>
+<header class="header">
+  <a href="index.html" class="nav-link">🏠 Главная</a>
+  <a href="admin.html" class="nav-link">⚙️ Admin</a>
+</header>
 
-  <script>
-  const rawData = localStorage.getItem('personData');
-  const resultDiv = document.getElementById('result');
+<main class="container">
+  <h1>Данные из базы данных</h1>
 
-  if (!rawData || rawData === '[]') {
-    resultDiv.textContent = 'Нет данных';
-  } else {
-    const data = JSON.parse(rawData);
-    resultDiv.innerHTML = ''; // Очистить при повторном заходе
+  <div id="stats" class="stats"></div>
 
-    data.forEach(person => {
-      const container = document.createElement('div');
-      container.className = 'person';
+  <h2>Список специалистов</h2>
+  <div id="result" class="grid"></div>
+</main>
 
-      const headerDiv = document.createElement('div');
-      headerDiv.className = 'name';
+<script>
+const rawData = localStorage.getItem('personData');
+const resultDiv = document.getElementById('result');
+const stats = document.getElementById('stats');
 
-      const nameSpan = document.createElement('span');
-      nameSpan.textContent = person.Name;
+let itogo = 0;
+let summaPrice = 0;
 
-      const telDiv = document.createElement('div');
-      telDiv.innerHTML = person.telephone;
+if (!rawData || rawData === '[]') {
+  resultDiv.textContent = 'Нет данных';
+} else {
+  const data = JSON.parse(rawData);
+  resultDiv.innerHTML = '';
 
-      headerDiv.appendChild(nameSpan);
-      headerDiv.appendChild(telDiv);
+  data.forEach(person => {
+    const container = document.createElement('div');
+    container.className = 'person';
 
-      const img = document.createElement('img');
-      // img.src = 'https://ce03510-wordpress-og5g7.tw1.ru/api/media/' + person.photo;
-      img.src = 'https://res.cloudinary.com/dbynsbahm/image/upload/v1776595857/' + person.photo;
-      img.className = 'photo';
+    const headerDiv = document.createElement('div');
+    headerDiv.className = 'name';
 
-      const button = document.createElement('button');
-      button.className = 'button';
-      button.innerHTML = 'Подробнее';
-      button.addEventListener('click', () => {
-        // const url = new URL('master.html', window.location.origin);
-        const url = new URL('/front/master.html', window.location.origin);
-        // const url = new URL('https://testserver-eight-olive.vercel.app/front/master.html', window.location.origin);
-        url.searchParams.set('name', encodeURIComponent(person.Name));
-        url.searchParams.set('profession_id', person.profession_title);
-        url.searchParams.set('portfolio', person.portfolio);
-        window.location.href = url.toString();
-      });
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = person.Name;
 
-      const deleteBtn = document.createElement('button');
-      deleteBtn.className = 'delete-btn';
-      deleteBtn.innerHTML = '🗑';
-      deleteBtn.title = 'Удалить';
-      deleteBtn.onclick = async () => {
-        if (!confirm(`Удалить ${person.Name}?`)) return;
-        try {
-          const delRes = await fetch('https://testserverrender.onrender.com/deletePerson', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              photo: person.photo,
-              portfolio: person.portfolio
-            })
-          });
-          const result = await delRes.json();
-          if (result.success) {
-            container.remove();
+    const telDiv = document.createElement('div');
+    telDiv.className = 'telDiv';
+    telDiv.innerHTML = `Телефон: ${person.telephone}`;
 
-            // Удаляем из localStorage текущего пользователя
-            const updatedData = data.filter(p => p.photo !== person.photo);
-            localStorage.setItem('personData', JSON.stringify(updatedData));
-          } else {
-            alert('Ошибка при удалении');
-          }
-        } catch (err) {
-          console.error(err);
-          alert('Ошибка при удалении');
-        }
-      };
+    headerDiv.appendChild(nameSpan);
+    headerDiv.appendChild(telDiv);
 
-      container.appendChild(deleteBtn);
-      container.appendChild(headerDiv);
-      container.appendChild(img);
-      container.appendChild(button);
-      resultDiv.appendChild(container);
+    const wrapper = document.createElement('div');
+    wrapper.className = 'photo-wrapper';
+
+    const img = document.createElement('img');
+    img.src = 'https://res.cloudinary.com/dbynsbahm/image/upload/v1776595857/' + person.photo;
+    img.className = 'photo';
+
+    wrapper.appendChild(img);
+    container.appendChild(wrapper);
+
+    const button = document.createElement('button');
+    button.className = 'button';
+    button.innerHTML = 'Подробнее';
+
+    button.addEventListener('click', () => {
+      const url = new URL('master.html', window.location.href);
+
+      url.searchParams.set('name', encodeURIComponent(person.Name));
+      url.searchParams.set('profession_id', person.profession_title);
+      url.searchParams.set('portfolio', person.portfolio);
+      url.searchParams.set('profession_price', person.profession_price);
+
+      window.location.href = url.toString();
     });
-  }
+
+    itogo += 1;
+    summaPrice += Number(person.profession_price);
+
+    container.appendChild(headerDiv);
+    container.appendChild(img);
+    container.appendChild(button);
+
+    resultDiv.appendChild(container);
+  });
+}
+
+// статистика
+const total = document.createElement('div');
+total.className = 'stat-item';
+total.innerHTML = `👥 Всего специалистов: <b>${itogo}</b>`;
+
+const avg = itogo ? Math.round(summaPrice / itogo) : 0;
+
+const average = document.createElement('div');
+average.className = 'stat-item';
+average.innerHTML = `💰 Средняя зарплата: <b>${avg} $</b>`;
+
+stats.appendChild(total);
+stats.appendChild(average);
 </script>
 
 </body>
