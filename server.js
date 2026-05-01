@@ -418,8 +418,8 @@ const multer = require('multer');
 require('dotenv').config();
 const { sequelize, HomeworkHuman, HomeworkProfession } = require('./bd');
 const cloudinary = require('./cloudinary');
-
 const jwt = require('jsonwebtoken')
+
 function checkAuth(req) {
   const cookie = req.headers.cookie || '';
   const token = cookie.split('auth=')[1]?.split(';')[0];
@@ -580,6 +580,11 @@ app.post('/bd', async (req, res) => {
    📌 POST /bdPost (Cloudinary)
 ============================== */
 app.post('/bdPost', uploadFields, async (req, res) => {
+  // Проверка авторизации (можно удалить, если не нужна):
+  if (!checkAuth(req)) {
+    return res.status(401).json({ error: 'Не авторизован' });
+  }
+
   try {
     const photoFile = req.files['photo']?.[0];
     const portfolioFiles = req.files['portfolio'] || [];
@@ -638,6 +643,11 @@ app.post('/bdPost', uploadFields, async (req, res) => {
    📌 POST /deletePerson
 ============================== */
 app.post('/deletePerson', async (req, res) => {
+  // Проверка авторизации (можно удалить, если не нужна):
+  if (!checkAuth(req)) {
+    return res.status(401).json({ error: 'Не авторизован' });
+  }
+
   try {
     const { photo, portfolio } = req.body;
 
@@ -689,19 +699,6 @@ app.get('/api/ping', (req, res) => {
 app.get('/', (req, res) => {
   res.send('Server OK');
 });
-
-/* ==============================
-   🚀 START
-============================== */
-(async () => {
-  try {
-    await sequelize.authenticate();
-    await sequelize.sync();
-    app.listen(5000, () => console.log('🚀 Server started'));
-  } catch (err) {
-    console.error(err);
-  }
-})();
 
 
 /* ==============================
@@ -793,3 +790,16 @@ app.post('/login', async (req, res) => {
   
     res.status(200).json({ success: true });
 });
+
+/* ==============================
+   🚀 START
+============================== */
+(async () => {
+  try {
+    await sequelize.authenticate();
+    await sequelize.sync();
+    app.listen(5000, () => console.log('🚀 Server started'));
+  } catch (err) {
+    console.error(err);
+  }
+})();
