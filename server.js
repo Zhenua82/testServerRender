@@ -726,3 +726,70 @@ app.get('/bt', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
+/* ==============================
+   📌 POST /login
+============================== */
+const attempts = new Map();
+
+function isBlocked(ip) {
+  const data = attempts.get(ip) || { count: 0, time: Date.now() };
+
+  if (Date.now() - data.time > 60000) {
+    attempts.set(ip, { count: 0, time: Date.now() });
+    return false;
+  }
+
+  return data.count >= 5;
+}
+
+app.post('/login', async (req, res) => {
+  const ip = req.headers['x-forwarded-for'] || 'unknown';
+  
+    if (isBlocked(ip)) {
+      return res.status(429).json({ error: 'Слишком много попыток' });
+    }
+  
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
+  
+    const { login, password } = req.body;
+  
+    // ❗ Проверка логина
+    if (
+      login !== process.env.ADMIN_LOGIN ||
+      password !== process.env.ADMIN_PASSWORD
+    ) {
+  
+      // увеличиваем счётчик попыток
+      const prev = attempts.get(ip) || { count: 0, time: Date.now() };
+      attempts.set(ip, {
+        count: prev.count + 1,
+        time: prev.time
+      });
+  
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+  
+    // сбрасываем попытки при успешном входе
+    attempts.delete(ip);
+  
+    const token = jwt.sign(
+      { role: 'admin' },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+  
+    res.setHeader(
+      'Set-Cookie',
+      `auth=${token}; HttpOnly; Path=/; Max-Age=3600; SameSite=None; Secure`
+    );
+  
+    res.status(200).json({ success: true });
+});
