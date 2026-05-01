@@ -613,7 +613,8 @@ app.post('/bdPost', uploadFields, async (req, res) => {
     // 🔻 данные
     const name = req.body.Name || 'Без имени';
     const telephone = req.body.telephone
-      ? `<a href="tel:${req.body.telephone}"><h5>${req.body.telephone}</h5></a>`
+      // ? `<a href="tel:${req.body.telephone}"><h5>${req.body.telephone}</h5></a>`
+      ? `${req.body.telephone}`
       : '';
 
     const created = await HomeworkHuman.create({
