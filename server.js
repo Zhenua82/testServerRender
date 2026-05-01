@@ -416,9 +416,23 @@ const path = require('path');
 const cors = require('cors');
 const multer = require('multer');
 require('dotenv').config();
-
 const { sequelize, HomeworkHuman, HomeworkProfession } = require('./bd');
 const cloudinary = require('./cloudinary');
+
+const jwt = require('jsonwebtoken')
+function checkAuth(req) {
+  const cookie = req.headers.cookie || '';
+  const token = cookie.split('auth=')[1]?.split(';')[0];
+
+  if (!token) return false;
+
+  try {
+    jwt.verify(token, process.env.JWT_SECRET);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 const app = express();
 app.use(express.json());
@@ -688,3 +702,27 @@ app.get('/', (req, res) => {
     console.error(err);
   }
 })();
+
+
+/* ==============================
+   📌 GET /bt
+============================== */
+app.get('/bt', async (req, res) => {
+
+  // Проверка авторизации (можно удалить, если не нужна):
+  if (!checkAuth(req)) {
+    return res.status(401).json({ error: 'Не авторизован' });
+  }
+  try {
+    // для GET данные обычно из query
+    const query = req.query;
+
+    res.status(200).json({
+      message: 'OK',
+      query // чтобы видеть, что пришло
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
