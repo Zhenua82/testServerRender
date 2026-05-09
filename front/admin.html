@@ -10,7 +10,7 @@
 
 <body>
 
-<script>
+<!-- <script>
 (async () => {
   const res = await fetch('https://testserverrender.onrender.com/bt', {
     method: 'GET',
@@ -21,6 +21,34 @@
     window.location.href = 'login.html';
   }
 })();
+</script> -->
+
+<script>
+  async function checkAdminAuth() {
+    try {
+      const res = await fetch('https://testserverrender.onrender.com/bt', {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-store'
+      });
+
+      if (res.status === 401) {
+        window.location.replace('login.html');
+      }
+
+    } catch (e) {
+      console.error(e);
+      window.location.replace('login.html');
+    }
+  }
+  // Проверка при обычной загрузке
+  checkAdminAuth();
+  // Проверка при возврате кнопкой "назад"
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+      checkAdminAuth();
+    }
+  });
 </script>
 
 <header class="header">
